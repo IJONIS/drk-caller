@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CallState, type PromptConfig } from '../types';
 import { OpenAIRealtimeConnection } from '../lib/openai-realtime';
 import { AudioProcessor } from '../lib/audio-processor';
