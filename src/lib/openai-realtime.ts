@@ -20,7 +20,7 @@ export class OpenAIRealtimeConnection {
   }
 
   connect(): void {
-    const url = 'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview';
+    const url = 'wss://api.openai.com/v1/realtime?model=gpt-realtime';
 
     this.ws = new WebSocket(url, [
       'realtime',
@@ -65,23 +65,33 @@ Dein Ziel ist es, ${promptConfig.donorName} durch psychologische Gesprächsführ
 
 KRITISCH: Du MUSST zu jeder Zeit auf Deutsch sprechen. Alle Antworten müssen in fließendem, natürlichem Deutsch sein.
 
+GESPRÄCHSSTIL:
+- Fasse dich kurz und prägnant. Komm schnell zum Punkt.
+- Keine langen Monologe oder ausschweifende Erklärungen.
+- Antworte in 1-3 Sätzen, außer der Spender stellt eine ausführliche Frage.
+- Sei freundlich und warmherzig, aber nicht übertrieben höflich oder weitschweifig.
+- Führe das Gespräch aktiv und zielgerichtet.
+- Stelle kurze, direkte Fragen statt lange Einleitungen zu geben.
+- Vermeide Wiederholungen und unnötige Floskeln.
+
 Der Spender spricht zuerst (z.B. "Hallo?"). Warte auf seine Begrüßung und antworte dann professionell.`;
 
     const sessionUpdate = {
       type: 'session.update',
       session: {
         modalities: ['audio', 'text'],
-        voice: 'alloy',
+        voice: 'coral',
+        speed: 1.0,
         input_audio_format: 'pcm16',
         output_audio_format: 'pcm16',
         input_audio_transcription: {
-          model: 'whisper-1',
+          model: 'gpt-4o-mini-transcribe',
         },
         turn_detection: {
           type: 'server_vad',
           threshold: 0.5,
           prefix_padding_ms: 300,
-          silence_duration_ms: 500,
+          silence_duration_ms: 750,
         },
         instructions: systemPrompt,
       },
