@@ -10,7 +10,6 @@ export interface RealtimeConnectionConfig {
 }
 
 const REALTIME_MODEL = 'gpt-4o-realtime-preview';
-const REALTIME_VOICE = 'coral';
 
 export class OpenAIRealtimeConnection {
   private peerConnection: RTCPeerConnection | null = null;
@@ -44,7 +43,7 @@ export class OpenAIRealtimeConnection {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        voice: REALTIME_VOICE,
+        voice: this.config.promptConfig.voice,
         instructions: this.config.promptConfig.systemPrompt,
       }),
     });

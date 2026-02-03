@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { PromptConfig, ContactTone } from '../types';
-import { DEFAULT_PROMPT_CONFIG, generateSystemPrompt } from '../types';
+import type { PromptConfig, ContactTone, RealtimeVoice } from '../types';
+import { DEFAULT_PROMPT_CONFIG, generateSystemPrompt, REALTIME_VOICES } from '../types';
 
 export default function Config() {
   const [config, setConfig] = useState<PromptConfig>(DEFAULT_PROMPT_CONFIG);
@@ -124,6 +124,26 @@ export default function Config() {
                   <option value="Casual">Casual (locker)</option>
                   <option value="Friendly">Freundlich (herzlich)</option>
                 </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Stimme *
+                </label>
+                <select
+                  required
+                  value={config.voice}
+                  onChange={(e) => updateField('voice', e.target.value as RealtimeVoice)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-redcross focus:ring-redcross"
+                >
+                  {REALTIME_VOICES.map((voice) => (
+                    <option key={voice.value} value={voice.value}>
+                      {voice.label}{voice.premium ? ' ⭐ (Premium)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Premium-Stimmen (Marin, Cedar) bieten die beste Audioqualität.
+                </p>
               </div>
             </div>
           </Section>

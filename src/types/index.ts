@@ -10,6 +10,35 @@ export enum CallState {
 
 export type ContactTone = 'Formal' | 'Casual' | 'Friendly';
 
+/**
+ * Available OpenAI Realtime API voices.
+ * Premium voices (marin, cedar) are recommended for best quality.
+ */
+export type RealtimeVoice =
+  | 'alloy'
+  | 'ash'
+  | 'ballad'
+  | 'coral'
+  | 'echo'
+  | 'sage'
+  | 'shimmer'
+  | 'verse'
+  | 'marin'
+  | 'cedar';
+
+export const REALTIME_VOICES: { value: RealtimeVoice; label: string; premium?: boolean }[] = [
+  { value: 'marin', label: 'Marin', premium: true },
+  { value: 'cedar', label: 'Cedar', premium: true },
+  { value: 'alloy', label: 'Alloy' },
+  { value: 'ash', label: 'Ash' },
+  { value: 'ballad', label: 'Ballad' },
+  { value: 'coral', label: 'Coral' },
+  { value: 'echo', label: 'Echo' },
+  { value: 'sage', label: 'Sage' },
+  { value: 'shimmer', label: 'Shimmer' },
+  { value: 'verse', label: 'Verse' },
+];
+
 export interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -18,6 +47,8 @@ export interface PromptConfig {
   donationHistory: string;
   contactTone: ContactTone;
   additionalInstructions?: string;
+  /** OpenAI Realtime voice to use for the agent */
+  voice: RealtimeVoice;
   // The actual prompt text - can be auto-generated or manually edited
   systemPrompt: string;
 }
@@ -53,6 +84,7 @@ export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   donationHistory: '2 Jahre',
   contactTone: 'Friendly',
   additionalInstructions: '',
+  voice: 'marin',
   systemPrompt: '',
 };
 
