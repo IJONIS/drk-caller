@@ -99,9 +99,7 @@ export default async function handler(
     if (!body.metadata.title || body.metadata.title.trim() === '') {
       return res.status(400).json({ error: 'Simulator title is required' });
     }
-    if (!body.metadata.subtitle || body.metadata.subtitle.trim() === '') {
-      return res.status(400).json({ error: 'Simulator subtitle is required' });
-    }
+    // subtitle is optional - no validation needed
     if (!isValidHexColor(body.metadata.accentColor || '')) {
       return res.status(400).json({ error: 'Invalid accent color (must be hex format like #C41E3A)' });
     }
