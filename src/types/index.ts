@@ -39,6 +39,15 @@ export const REALTIME_VOICES: { value: RealtimeVoice; label: string; premium?: b
   { value: 'verse', label: 'Verse' },
 ];
 
+/**
+ * Speech speed for OpenAI Realtime API.
+ * Range: 0.25 (slowest) to 1.5 (fastest), default 1.0
+ */
+export const SPEECH_SPEED_MIN = 0.25;
+export const SPEECH_SPEED_MAX = 1.5;
+export const SPEECH_SPEED_DEFAULT = 1.0;
+export const SPEECH_SPEED_STEP = 0.05;
+
 export interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -49,6 +58,8 @@ export interface PromptConfig {
   additionalInstructions?: string;
   /** OpenAI Realtime voice to use for the agent */
   voice: RealtimeVoice;
+  /** Speech speed: 0.25 (slowest) to 1.5 (fastest), default 1.0 */
+  speechSpeed: number;
   // The actual prompt text - can be auto-generated or manually edited
   systemPrompt: string;
 }
@@ -85,6 +96,7 @@ export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   contactTone: 'Friendly',
   additionalInstructions: '',
   voice: 'marin',
+  speechSpeed: SPEECH_SPEED_DEFAULT,
   systemPrompt: '',
 };
 

@@ -15,6 +15,10 @@ import {
   isValidHexColor,
   isValidSlug,
   toSlug,
+  SPEECH_SPEED_MIN,
+  SPEECH_SPEED_MAX,
+  SPEECH_SPEED_DEFAULT,
+  SPEECH_SPEED_STEP,
 } from '../types';
 
 export default function Config() {
@@ -432,6 +436,35 @@ export default function Config() {
                   </select>
                   <p className="mt-1 text-xs text-gray-500">
                     Premium-Stimmen (Marin, Cedar) bieten die beste Audioqualität.
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Sprechgeschwindigkeit
+                  </label>
+                  <div className="mt-1 flex items-center space-x-4">
+                    <input
+                      type="range"
+                      min={SPEECH_SPEED_MIN}
+                      max={SPEECH_SPEED_MAX}
+                      step={SPEECH_SPEED_STEP}
+                      value={config.speechSpeed ?? SPEECH_SPEED_DEFAULT}
+                      onChange={(e) => updateField('speechSpeed', Number(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <span className="w-16 text-center text-sm font-medium text-gray-700">
+                      {(config.speechSpeed ?? SPEECH_SPEED_DEFAULT).toFixed(2)}x
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateField('speechSpeed', SPEECH_SPEED_DEFAULT)}
+                      className="text-xs text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Zurücksetzen
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {SPEECH_SPEED_MIN}x (langsam) bis {SPEECH_SPEED_MAX}x (schnell), Standard: {SPEECH_SPEED_DEFAULT}x
                   </p>
                 </div>
               </div>

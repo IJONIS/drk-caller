@@ -19,6 +19,7 @@ interface SimulatorConfig {
   contactTone: string;
   additionalInstructions: string;
   voice: string;
+  speechSpeed: number;
   systemPrompt: string;
   metadata: SimulatorMetadata;
 }
@@ -67,6 +68,7 @@ function createDefaultSimulatorConfig(): SimulatorConfig {
     contactTone: 'Friendly',
     additionalInstructions: '',
     voice: 'marin',
+    speechSpeed: 1.0,
     systemPrompt: '',
   };
 
@@ -250,6 +252,7 @@ export function apiPlugin(): Plugin {
                 contactTone: updates.contactTone || 'Friendly',
                 additionalInstructions: updates.additionalInstructions || '',
                 voice: updates.voice || 'marin',
+                speechSpeed: typeof updates.speechSpeed === 'number' ? updates.speechSpeed : 1.0,
                 systemPrompt: updates.systemPrompt || generateSystemPrompt(updates as any),
                 metadata: {
                   slug: newSlug,
@@ -400,7 +403,7 @@ export function apiPlugin(): Plugin {
           });
           req.on('end', async () => {
             try {
-              const { voice, instructions } = JSON.parse(body);
+              const { voice, instructions, speed } = JSON.parse(body);
               const apiKey = env.VITE_OPENAI_API_KEY;
 
               if (!apiKey) {
@@ -408,6 +411,11 @@ export function apiPlugin(): Plugin {
                 res.end(JSON.stringify({ error: 'OpenAI API key not configured' }));
                 return;
               }
+
+              // Clamp speed to valid range (0.25-1.5), default 1.0
+              const speechSpeed = typeof speed === 'number'
+                ? Math.min(1.5, Math.max(0.25, speed))
+                : 1.0;
 
               const response = await fetch(
                 'https://api.openai.com/v1/realtime/sessions',
@@ -422,6 +430,8 @@ export function apiPlugin(): Plugin {
                     voice: voice || 'coral',
                     instructions: instructions || '',
                     modalities: ['audio', 'text'],
+                    output_audio_format: 'pcm16',
+                    speed: speechSpeed,
                     input_audio_transcription: {
                       model: 'gpt-4o-mini-transcribe',
                     },

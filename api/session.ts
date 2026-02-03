@@ -19,7 +19,12 @@ export default async function handler(
   }
 
   try {
-    const { voice, instructions } = req.body || {};
+    const { voice, instructions, speed } = req.body || {};
+
+    // Clamp speed to valid range (0.25-1.5), default 1.0
+    const speechSpeed = typeof speed === 'number'
+      ? Math.min(1.5, Math.max(0.25, speed))
+      : 1.0;
 
     const response = await fetch(
       'https://api.openai.com/v1/realtime/sessions',
@@ -34,6 +39,8 @@ export default async function handler(
           voice: voice || 'coral',
           instructions: instructions || '',
           modalities: ['audio', 'text'],
+          output_audio_format: 'pcm16',
+          speed: speechSpeed,
           input_audio_transcription: {
             model: 'gpt-4o-mini-transcribe',
           },

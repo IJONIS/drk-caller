@@ -45,6 +45,7 @@ export class OpenAIRealtimeConnection {
       body: JSON.stringify({
         voice: this.config.promptConfig.voice,
         instructions: this.config.promptConfig.systemPrompt,
+        speed: this.config.promptConfig.speechSpeed,
       }),
     });
 
