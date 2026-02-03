@@ -2,26 +2,13 @@ import { loadEnv, type Plugin } from 'vite';
 
 const DEFAULT_CONFIG = {
   agentName: 'Sarah',
-  agentRole: 'Spenderbetreuung',
-  agentDialect: 'Hamburg',
-  agentYearsExperience: 3,
-
-  speakingPace: 'Normal',
-  useFillers: true,
-  showEmotion: true,
-
-  followUpOnTopics: true,
-  allowDigressions: true,
-  waitForDonorFirst: true,
-
   donorName: 'Max Mustermann',
   currentAmount: 20,
   targetAmount: 35,
   donationHistory: '2 Jahre',
   contactTone: 'Friendly',
-
   additionalInstructions: '',
-  customPersonality: '',
+  systemPrompt: '',
 };
 
 let storedConfig = { ...DEFAULT_CONFIG };
@@ -97,7 +84,7 @@ export function apiPlugin(): Plugin {
               storedConfig = { ...storedConfig, ...updates };
               res.setHeader('Content-Type', 'application/json');
               res.statusCode = 200;
-              res.end(JSON.stringify(storedConfig));
+              res.end(JSON.stringify({ success: true, config: storedConfig }));
             } catch {
               res.statusCode = 400;
               res.end(JSON.stringify({ error: 'Invalid JSON' }));

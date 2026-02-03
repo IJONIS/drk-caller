@@ -9,6 +9,7 @@ const DEFAULT_CONFIG = {
   donationHistory: '2 Jahre',
   contactTone: 'Friendly',
   additionalInstructions: '',
+  systemPrompt: '',
 };
 
 export default async function handler(
@@ -26,7 +27,8 @@ export default async function handler(
       return res.status(200).json(DEFAULT_CONFIG);
     }
 
-    return res.status(200).json(config);
+    // Merge with defaults to handle new fields
+    return res.status(200).json({ ...DEFAULT_CONFIG, ...config });
   } catch (error) {
     console.error('Error fetching config:', error);
     return res.status(500).json({ error: 'Failed to fetch configuration' });

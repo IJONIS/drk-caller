@@ -9,6 +9,7 @@ interface PromptConfig {
   donationHistory: string;
   contactTone: 'Formal' | 'Casual' | 'Friendly';
   additionalInstructions?: string;
+  systemPrompt: string;
 }
 
 export default async function handler(
@@ -37,6 +38,10 @@ export default async function handler(
 
     if (!['Formal', 'Casual', 'Friendly'].includes(config.contactTone)) {
       return res.status(400).json({ error: 'Invalid contact tone' });
+    }
+
+    if (!config.systemPrompt || config.systemPrompt.trim().length < 10) {
+      return res.status(400).json({ error: 'System prompt is required' });
     }
 
     await kv.set('red-cross-caller:prompt-config', config);
