@@ -182,7 +182,7 @@ Follow a unified development framework with automatic phase detection, parallel 
 - [`src/components/PhoneVisualization.tsx`](src/components/PhoneVisualization.tsx)
 
 **Call flow states:**
-1. `idle` - Initial state, show "Anruf starten" button
+1. `idle` - Initial state, show persona dropdown (if configured) + "Anruf starten" button
 2. `ringing` - Phone ringing animation, show "Annehmen" button
 3. `connecting` - Establishing WebRTC connection, show loader
 4. `user_speaking` - User's turn (initial state after connection)
@@ -220,6 +220,11 @@ ended → idle (after 2s delay)
 
 **Configuration structure:**
 ```typescript
+interface Persona {
+  name: string    // Display name in dropdown
+  prompt: string  // Text appended to system prompt
+}
+
 interface PromptConfig {
   agentName: string
   donorName: string
@@ -228,6 +233,10 @@ interface PromptConfig {
   donationHistory: string
   contactTone: 'Formal' | 'Casual' | 'Friendly'
   additionalInstructions?: string
+  voice: RealtimeVoice
+  speechSpeed: number
+  personas: Persona[]  // 0-3 selectable personas per simulator
+  systemPrompt: string
 }
 ```
 
@@ -259,6 +268,32 @@ const STRINGS = {
   // etc.
 }
 ```
+
+### 6. Persona System
+**Locations**:
+- [`src/types/index.ts`](src/types/index.ts) — `Persona` interface, `MAX_PERSONAS`, helpers
+- [`src/pages/Config.tsx`](src/pages/Config.tsx) — Persona editing (3 slots)
+- [`src/components/CallInterface.tsx`](src/components/CallInterface.tsx) — Persona dropdown + prompt combining
+
+**How it works:**
+- Each simulator can have 0-3 personas (name + prompt text)
+- A persona is "configured" when both `name` and `prompt` are non-empty
+- If no personas are configured → no dropdown shown, call works as before
+- If 1-3 personas are configured → dropdown appears on idle screen, first persona pre-selected
+- On call start, the selected persona's `prompt` is appended to the `systemPrompt` with a `\n\n---\n\n` separator via `buildPromptWithPersona()`
+
+**Key helpers in `src/types/index.ts`:**
+- `getConfiguredPersonas(personas)` — filters out empty/incomplete personas
+- `buildPromptWithPersona(systemPrompt, persona?)` — combines system prompt + persona prompt
+
+**Config page UI:**
+- 3 persona slots in a "Personas" section (between Donor Info and System Prompt)
+- Each slot has Name input + Prompt textarea
+- Green "Aktiv" badge shown when both fields are filled
+
+**Anti-patterns:**
+- Don't store persona selection server-side — it's a per-call client-side choice
+- Don't modify the stored `systemPrompt` — persona prompt is combined at call time only
 
 ---
 
@@ -321,6 +356,10 @@ KV_REST_API_READ_ONLY_TOKEN=...
 - [ ] Call can be ended cleanly
 - [ ] Audio resources are released (mic light turns off)
 - [ ] Configuration page saves and loads correctly
+- [ ] Persona fields save and load correctly
+- [ ] Persona dropdown appears on call screen when personas are configured
+- [ ] No dropdown shown when no personas are configured
+- [ ] Selected persona prompt is sent with system prompt (verify in Network tab)
 - [ ] Error states show appropriate German messages
 - [ ] Works in Chrome/Safari/Firefox
 
@@ -348,9 +387,10 @@ KV_REST_API_READ_ONLY_TOKEN=...
 
 ### Changing Configuration Options
 1. Update `PromptConfig` interface in [`src/types/index.ts`](src/types/index.ts)
-2. Update API handlers in `api/config/`
-3. Update form in `src/pages/Config.tsx`
-4. Test save/load cycle
+2. Update API handlers in `api/simulators/[slug]/update.ts` + `api/simulators/[slug]/get.ts` + `api/simulators/list.ts`
+3. Update dev proxy types in `vite-plugin-api.ts` (keep in sync with API endpoints)
+4. Update form in `src/pages/Config.tsx`
+5. Test save/load cycle
 
 ### Changing Voice or Model
 1. Update `REALTIME_MODEL` and `REALTIME_VOICE` constants in `openai-realtime.ts`
@@ -401,7 +441,15 @@ vercel --prod
 │   └── index.css         # Global styles
 ├── api/                  # Vercel serverless functions
 │   ├── session.ts                 # POST /api/session (ephemeral key)
-│   └── config/
+│   ├── auth/
+│   │   └── verify.ts              # POST /api/auth/verify
+│   ├── simulators/
+│   │   ├── list.ts                # GET /api/simulators/list
+│   │   └── [slug]/
+│   │       ├── get.ts             # GET /api/simulators/:slug/get
+│   │       ├── update.ts          # POST /api/simulators/:slug/update
+│   │       └── delete.ts          # DELETE /api/simulators/:slug/delete
+│   └── config/                    # Legacy endpoints
 │       ├── get.ts                 # GET /api/config/get
 │       └── update.ts              # POST /api/config/update
 ├── public/               # Static assets
@@ -504,6 +552,6 @@ vercel --prod
 
 ---
 
-**Last Updated**: 2026-02-03
+**Last Updated**: 2026-02-06
 **Project Status**: Proof of Concept
 **Maintainer**: Ijonis Team
