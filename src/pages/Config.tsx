@@ -6,6 +6,7 @@ import type {
   SimulatorMetadata,
   ContactTone,
   RealtimeVoice,
+  Persona,
 } from '../types';
 import {
   DEFAULT_SIMULATOR_CONFIG,
@@ -19,6 +20,7 @@ import {
   SPEECH_SPEED_MAX,
   SPEECH_SPEED_DEFAULT,
   SPEECH_SPEED_STEP,
+  MAX_PERSONAS,
 } from '../types';
 
 export default function Config() {
@@ -255,6 +257,19 @@ export default function Config() {
   const regeneratePrompt = () => {
     setPromptManuallyEdited(false);
     setConfig((prev) => (prev ? { ...prev, systemPrompt: generateSystemPrompt(prev) } : prev));
+  };
+
+  const updatePersona = (index: number, field: keyof Persona, value: string) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const personas = [...(prev.personas || [])];
+      // Ensure array has enough slots
+      while (personas.length <= index) {
+        personas.push({ name: '', prompt: '' });
+      }
+      personas[index] = { ...personas[index], [field]: value };
+      return { ...prev, personas };
+    });
   };
 
   if (loading && simulators.length === 0) {
@@ -536,6 +551,54 @@ export default function Config() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
                   placeholder="Spezielle Taktiken oder Hinweise für den Agent..."
                 />
+              </div>
+            </Section>
+
+            {/* Personas */}
+            <Section title="Personas">
+              <p className="text-sm text-gray-500 mb-4">
+                Bis zu {MAX_PERSONAS} Personas konfigurieren. Konfigurierte Personas erscheinen als Dropdown auf dem Anrufbildschirm. Leere Felder werden ignoriert.
+              </p>
+              <div className="space-y-4">
+                {Array.from({ length: MAX_PERSONAS }, (_, i) => {
+                  const persona = config.personas?.[i] || { name: '', prompt: '' };
+                  return (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-gray-700">
+                          Persona {i + 1}
+                        </span>
+                        {persona.name.trim() && persona.prompt.trim() && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            Aktiv
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm text-gray-600">Name</label>
+                          <input
+                            type="text"
+                            placeholder={`z.B. Persona ${i + 1}`}
+                            value={persona.name}
+                            onChange={(e) => updatePersona(i, 'name', e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-600">Prompt</label>
+                          <textarea
+                            rows={3}
+                            placeholder="Zusätzliche Anweisungen für diese Persona..."
+                            value={persona.prompt}
+                            onChange={(e) => updatePersona(i, 'prompt', e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Section>
 

@@ -23,6 +23,11 @@ interface SimulatorMetadata {
   updatedAt: string;
 }
 
+interface Persona {
+  name: string;
+  prompt: string;
+}
+
 interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -32,6 +37,7 @@ interface PromptConfig {
   contactTone: ContactTone;
   additionalInstructions?: string;
   voice: RealtimeVoice;
+  personas: Persona[];
   systemPrompt: string;
 }
 

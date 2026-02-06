@@ -48,6 +48,20 @@ export const SPEECH_SPEED_MAX = 1.5;
 export const SPEECH_SPEED_DEFAULT = 1.0;
 export const SPEECH_SPEED_STEP = 0.05;
 
+/**
+ * A persona representing a specific caller profile.
+ * The persona prompt is appended to the system prompt when selected.
+ */
+export interface Persona {
+  /** Display name shown in the dropdown (e.g., "Max Mustermann") */
+  name: string;
+  /** Text block appended to the system prompt */
+  prompt: string;
+}
+
+/** Maximum number of personas per simulator */
+export const MAX_PERSONAS = 3;
+
 export interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -60,6 +74,8 @@ export interface PromptConfig {
   voice: RealtimeVoice;
   /** Speech speed: 0.25 (slowest) to 1.5 (fastest), default 1.0 */
   speechSpeed: number;
+  /** Up to 3 personas that can be selected before starting a call */
+  personas: Persona[];
   // The actual prompt text - can be auto-generated or manually edited
   systemPrompt: string;
 }
@@ -97,6 +113,7 @@ export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   additionalInstructions: '',
   voice: 'marin',
   speechSpeed: SPEECH_SPEED_DEFAULT,
+  personas: [],
   systemPrompt: '',
 };
 
@@ -165,6 +182,25 @@ export const DEFAULT_SIMULATOR_CONFIG: SimulatorConfig = {
   ...DEFAULT_PROMPT_CONFIG,
   metadata: DEFAULT_SIMULATOR_METADATA,
 };
+
+/**
+ * Combines a system prompt with a selected persona's prompt text.
+ * @param systemPrompt - The base system prompt
+ * @param persona - The selected persona (or undefined if none)
+ * @returns Combined prompt string
+ */
+export function buildPromptWithPersona(systemPrompt: string, persona?: Persona): string {
+  if (!persona?.prompt?.trim()) return systemPrompt;
+  return `${systemPrompt}\n\n---\n\n${persona.prompt}`;
+}
+
+/**
+ * Returns only the configured (non-empty) personas from a list.
+ * A persona is considered configured if both name and prompt are non-empty.
+ */
+export function getConfiguredPersonas(personas: Persona[]): Persona[] {
+  return personas.filter((p) => p.name.trim() !== '' && p.prompt.trim() !== '');
+}
 
 /**
  * Validates a hex color code.

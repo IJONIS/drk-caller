@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { CallState, type SimulatorConfig, DEFAULT_ACCENT_COLOR } from '../types';
+import {
+  CallState,
+  type SimulatorConfig,
+  type Persona,
+  DEFAULT_ACCENT_COLOR,
+  getConfiguredPersonas,
+  buildPromptWithPersona,
+} from '../types';
 import { OpenAIRealtimeConnection } from '../lib/openai-realtime';
 import PhoneVisualization from './PhoneVisualization';
 import RingingPhone from './RingingPhone';
@@ -39,9 +46,13 @@ export default function CallInterface({ simulatorConfig, slug }: CallInterfacePr
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
   const [config, setConfig] = useState<SimulatorConfig | null>(simulatorConfig || null);
   const [isLoading, setIsLoading] = useState(!simulatorConfig);
+  const [selectedPersona, setSelectedPersona] = useState<Persona | undefined>(undefined);
 
   const connectionRef = useRef<OpenAIRealtimeConnection | null>(null);
   const speakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Compute configured personas from config
+  const configuredPersonas = config?.personas ? getConfiguredPersonas(config.personas) : [];
 
   // Extract display values from config
   const title = config?.metadata?.title || 'Ijonis Anrufsimulator';
@@ -80,6 +91,18 @@ export default function CallInterface({ simulatorConfig, slug }: CallInterfacePr
     fetchConfig();
   }, [simulatorConfig, slug]);
 
+  // Auto-select first persona when config loads
+  useEffect(() => {
+    if (config?.personas) {
+      const configured = getConfiguredPersonas(config.personas);
+      if (configured.length > 0) {
+        setSelectedPersona(configured[0]);
+      } else {
+        setSelectedPersona(undefined);
+      }
+    }
+  }, [config]);
+
   useEffect(() => {
     return () => {
       cleanup();
@@ -111,8 +134,14 @@ export default function CallInterface({ simulatorConfig, slug }: CallInterfacePr
         throw new Error('Konfiguration nicht geladen');
       }
 
+      // Combine system prompt with selected persona prompt
+      const effectiveConfig: SimulatorConfig = {
+        ...config,
+        systemPrompt: buildPromptWithPersona(config.systemPrompt, selectedPersona),
+      };
+
       connectionRef.current = new OpenAIRealtimeConnection({
-        promptConfig: config,
+        promptConfig: effectiveConfig,
         onAgentSpeaking: () => {
           setIsAgentSpeaking(true);
           setCallState(CallState.AGENT_SPEAKING);
@@ -226,6 +255,29 @@ export default function CallInterface({ simulatorConfig, slug }: CallInterfacePr
 
             {/* Content Section */}
             <div className="p-8 space-y-6">
+              {/* Persona Selector */}
+              {configuredPersonas.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Persona auswählen
+                  </label>
+                  <select
+                    value={selectedPersona?.name || ''}
+                    onChange={(e) => {
+                      const persona = configuredPersonas.find((p) => p.name === e.target.value);
+                      setSelectedPersona(persona);
+                    }}
+                    className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 py-3 px-4 text-gray-900"
+                  >
+                    {configuredPersonas.map((persona) => (
+                      <option key={persona.name} value={persona.name}>
+                        {persona.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* Call to action button */}
               <button
                 onClick={startCall}

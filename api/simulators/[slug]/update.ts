@@ -28,6 +28,11 @@ interface SimulatorIndex {
   defaultSlug: string;
 }
 
+interface Persona {
+  name: string;
+  prompt: string;
+}
+
 interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -37,6 +42,7 @@ interface PromptConfig {
   contactTone: ContactTone;
   additionalInstructions?: string;
   voice: RealtimeVoice;
+  personas: Persona[];
   systemPrompt: string;
 }
 
@@ -155,6 +161,7 @@ export default async function handler(
       contactTone: body.contactTone as ContactTone,
       additionalInstructions: body.additionalInstructions || '',
       voice: body.voice || 'marin',
+      personas: Array.isArray(body.personas) ? body.personas : [],
       systemPrompt: body.systemPrompt,
       metadata: {
         slug: newSlug,

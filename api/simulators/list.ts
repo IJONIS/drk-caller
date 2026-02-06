@@ -28,6 +28,11 @@ interface SimulatorIndex {
   defaultSlug: string;
 }
 
+interface Persona {
+  name: string;
+  prompt: string;
+}
+
 interface PromptConfig {
   agentName: string;
   donorName: string;
@@ -37,6 +42,7 @@ interface PromptConfig {
   contactTone: ContactTone;
   additionalInstructions?: string;
   voice: RealtimeVoice;
+  personas: Persona[];
   systemPrompt: string;
 }
 
@@ -80,6 +86,7 @@ const DEFAULT_PROMPT_CONFIG: Omit<PromptConfig, 'systemPrompt'> = {
   contactTone: 'Friendly',
   additionalInstructions: '',
   voice: 'marin',
+  personas: [],
 };
 
 /**

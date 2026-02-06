@@ -10,6 +10,11 @@ interface SimulatorMetadata {
   updatedAt: string;
 }
 
+interface Persona {
+  name: string;
+  prompt: string;
+}
+
 interface SimulatorConfig {
   agentName: string;
   donorName: string;
@@ -20,6 +25,7 @@ interface SimulatorConfig {
   additionalInstructions: string;
   voice: string;
   speechSpeed: number;
+  personas: Persona[];
   systemPrompt: string;
   metadata: SimulatorMetadata;
 }
@@ -69,6 +75,7 @@ function createDefaultSimulatorConfig(): SimulatorConfig {
     additionalInstructions: '',
     voice: 'marin',
     speechSpeed: 1.0,
+    personas: [] as Persona[],
     systemPrompt: '',
   };
 
@@ -253,6 +260,7 @@ export function apiPlugin(): Plugin {
                 additionalInstructions: updates.additionalInstructions || '',
                 voice: updates.voice || 'marin',
                 speechSpeed: typeof updates.speechSpeed === 'number' ? updates.speechSpeed : 1.0,
+                personas: Array.isArray(updates.personas) ? updates.personas : [],
                 systemPrompt: updates.systemPrompt || generateSystemPrompt(updates as any),
                 metadata: {
                   slug: newSlug,
