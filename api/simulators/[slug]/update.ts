@@ -42,6 +42,7 @@ interface PromptConfig {
   contactTone: ContactTone;
   additionalInstructions?: string;
   voice: RealtimeVoice;
+  language?: string;
   personas: Persona[];
   systemPrompt: string;
 }
@@ -161,6 +162,7 @@ export default async function handler(
       contactTone: body.contactTone as ContactTone,
       additionalInstructions: body.additionalInstructions || '',
       voice: body.voice || 'marin',
+      language: body.language === 'EN' ? 'EN' : 'DE',
       personas: Array.isArray(body.personas) ? body.personas : [],
       systemPrompt: body.systemPrompt,
       metadata: {

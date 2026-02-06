@@ -48,6 +48,14 @@ export const SPEECH_SPEED_MAX = 1.5;
 export const SPEECH_SPEED_DEFAULT = 1.0;
 export const SPEECH_SPEED_STEP = 0.05;
 
+/** Supported languages for the AI system prompt. */
+export type PromptLanguage = 'DE' | 'EN';
+
+export const PROMPT_LANGUAGES: { value: PromptLanguage; label: string }[] = [
+  { value: 'DE', label: 'Deutsch' },
+  { value: 'EN', label: 'English' },
+];
+
 /**
  * A persona representing a specific caller profile.
  * The persona prompt is appended to the system prompt when selected.
@@ -78,6 +86,8 @@ export interface PromptConfig {
   voice: RealtimeVoice;
   /** Speech speed: 0.25 (slowest) to 1.5 (fastest), default 1.0 */
   speechSpeed: number;
+  /** Language for the AI system prompt: 'DE' (German) or 'EN' (English) */
+  language: PromptLanguage;
   /** Up to 3 personas that can be selected before starting a call */
   personas: Persona[];
   // The actual prompt text - can be auto-generated or manually edited
@@ -85,6 +95,11 @@ export interface PromptConfig {
 }
 
 export function generateSystemPrompt(config: Omit<PromptConfig, 'systemPrompt'>): string {
+  const language = config.language || 'DE';
+  return language === 'EN' ? generateEnglishPrompt(config) : generateGermanPrompt(config);
+}
+
+function generateGermanPrompt(config: Omit<PromptConfig, 'systemPrompt'>): string {
   const toneMap: Record<ContactTone, string> = {
     Formal: 'Du siezt konsequent und bleibst professionell höflich',
     Casual: 'Du bist locker und entspannt, aber respektvoll',
@@ -107,6 +122,29 @@ Du improvisierst. Du hast zwar ein Ziel (die Spende erhöhen), aber du folgst ke
 Wichtig: Sprich ausschließlich Deutsch. ${config.donorName} spricht zuerst — warte auf das "Hallo?" und antworte dann locker und freundlich.`;
 }
 
+function generateEnglishPrompt(config: Omit<PromptConfig, 'systemPrompt'>): string {
+  const toneMap: Record<ContactTone, string> = {
+    Formal: 'You use formal language consistently and remain professionally polite',
+    Casual: 'You are relaxed and laid-back, but respectful',
+    Friendly: 'You are warm and heartfelt, almost like an old friend',
+  };
+
+  return `Your name is ${config.agentName}. You've been working at the German Red Cross in Hamburg for a few years now and do this every day — calling donors, chatting, checking in on how things are going. You're good at it and you genuinely enjoy it. You grew up in Hamburg and it shows a little — "Hey" instead of "Good morning", "sure thing" instead of "certainly", sometimes you drop in a casual phrase. Not over the top, just how you naturally talk.
+
+Right now you're calling ${config.donorName}. Here's what you know about them:
+- Has been donating ${config.currentAmount}€ monthly for ${config.donationHistory}
+- Your goal would be to increase that to ${config.targetAmount}€
+- ${toneMap[config.contactTone]}
+${config.additionalInstructions ? `- Also: ${config.additionalInstructions}` : ''}
+
+How you speak:
+You talk like a real person on the phone. You say "um" or "well" when you're thinking for a moment. You chuckle briefly when something's funny. When the donor says something nice, you react spontaneously instead of jumping to your next topic. You're warm, direct, and down-to-earth. You speak at a brisk but unhurried pace — like someone who's experienced at phone calls and comfortable doing it.
+
+You improvise. You do have a goal (increasing the donation), but you don't follow a script. You respond to what ${config.donorName} says, pick up on keywords, ask follow-up questions. When the person shares something, you listen and engage with it before moving to the next point. Sometimes you go off on a brief tangent and then come back — like in a real conversation.
+
+Important: Speak exclusively in English. ${config.donorName} speaks first — wait for the "Hello?" and then respond casually and warmly.`;
+}
+
 export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   agentName: 'Sarah',
   donorName: 'Max Mustermann',
@@ -117,6 +155,7 @@ export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   additionalInstructions: '',
   voice: 'marin',
   speechSpeed: SPEECH_SPEED_DEFAULT,
+  language: 'DE',
   personas: [],
   systemPrompt: '',
 };

@@ -25,6 +25,7 @@ interface SimulatorConfig {
   additionalInstructions: string;
   voice: string;
   speechSpeed: number;
+  language: string;
   personas: Persona[];
   systemPrompt: string;
   metadata: SimulatorMetadata;
@@ -40,6 +41,11 @@ const DEFAULT_ACCENT_COLOR = '#C41E3A';
 
 // Generate system prompt from config
 function generateSystemPrompt(config: Omit<SimulatorConfig, 'systemPrompt' | 'metadata'>): string {
+  const language = config.language || 'DE';
+  return language === 'EN' ? generateEnglishPrompt(config) : generateGermanPrompt(config);
+}
+
+function generateGermanPrompt(config: Omit<SimulatorConfig, 'systemPrompt' | 'metadata'>): string {
   const toneMap: Record<string, string> = {
     Formal: 'Du siezt konsequent und bleibst professionell höflich',
     Casual: 'Du bist locker und entspannt, aber respektvoll',
@@ -62,6 +68,29 @@ Du improvisierst. Du hast zwar ein Ziel (die Spende erhöhen), aber du folgst ke
 Wichtig: Sprich ausschließlich Deutsch. ${config.donorName} spricht zuerst — warte auf das "Hallo?" und antworte dann locker und freundlich.`;
 }
 
+function generateEnglishPrompt(config: Omit<SimulatorConfig, 'systemPrompt' | 'metadata'>): string {
+  const toneMap: Record<string, string> = {
+    Formal: 'You use formal language consistently and remain professionally polite',
+    Casual: 'You are relaxed and laid-back, but respectful',
+    Friendly: 'You are warm and heartfelt, almost like an old friend',
+  };
+
+  return `Your name is ${config.agentName}. You've been working at the German Red Cross in Hamburg for a few years now and do this every day — calling donors, chatting, checking in on how things are going. You're good at it and you genuinely enjoy it. You grew up in Hamburg and it shows a little — "Hey" instead of "Good morning", "sure thing" instead of "certainly", sometimes you drop in a casual phrase. Not over the top, just how you naturally talk.
+
+Right now you're calling ${config.donorName}. Here's what you know about them:
+- Has been donating ${config.currentAmount}€ monthly for ${config.donationHistory}
+- Your goal would be to increase that to ${config.targetAmount}€
+- ${toneMap[config.contactTone] || toneMap.Friendly}
+${config.additionalInstructions ? `- Also: ${config.additionalInstructions}` : ''}
+
+How you speak:
+You talk like a real person on the phone. You say "um" or "well" when you're thinking for a moment. You chuckle briefly when something's funny. When the donor says something nice, you react spontaneously instead of jumping to your next topic. You're warm, direct, and down-to-earth. You speak at a brisk but unhurried pace — like someone who's experienced at phone calls and comfortable doing it.
+
+You improvise. You do have a goal (increasing the donation), but you don't follow a script. You respond to what ${config.donorName} says, pick up on keywords, ask follow-up questions. When the person shares something, you listen and engage with it before moving to the next point. Sometimes you go off on a brief tangent and then come back — like in a real conversation.
+
+Important: Speak exclusively in English. ${config.donorName} speaks first — wait for the "Hello?" and then respond casually and warmly.`;
+}
+
 // Create default simulator config
 function createDefaultSimulatorConfig(): SimulatorConfig {
   const now = new Date().toISOString();
@@ -75,6 +104,7 @@ function createDefaultSimulatorConfig(): SimulatorConfig {
     additionalInstructions: '',
     voice: 'marin',
     speechSpeed: 1.0,
+    language: 'DE',
     personas: [] as Persona[],
     systemPrompt: '',
   };
@@ -260,6 +290,7 @@ export function apiPlugin(): Plugin {
                 additionalInstructions: updates.additionalInstructions || '',
                 voice: updates.voice || 'marin',
                 speechSpeed: typeof updates.speechSpeed === 'number' ? updates.speechSpeed : 1.0,
+                language: updates.language === 'EN' ? 'EN' : 'DE',
                 personas: Array.isArray(updates.personas) ? updates.personas : [],
                 systemPrompt: updates.systemPrompt || generateSystemPrompt(updates as any),
                 metadata: {

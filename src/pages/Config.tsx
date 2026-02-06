@@ -6,6 +6,7 @@ import type {
   SimulatorMetadata,
   ContactTone,
   RealtimeVoice,
+  PromptLanguage,
   Persona,
 } from '../types';
 import {
@@ -13,6 +14,7 @@ import {
   DEFAULT_ACCENT_COLOR,
   generateSystemPrompt,
   REALTIME_VOICES,
+  PROMPT_LANGUAGES,
   isValidHexColor,
   isValidSlug,
   toSlug,
@@ -431,6 +433,26 @@ export default function Config() {
                     <option value="Casual">Casual (locker)</option>
                     <option value="Friendly">Freundlich (herzlich)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Sprache (KI-Prompt) *
+                  </label>
+                  <select
+                    required
+                    value={config.language || 'DE'}
+                    onChange={(e) => updateField('language', e.target.value as PromptLanguage)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500"
+                  >
+                    {PROMPT_LANGUAGES.map((lang) => (
+                      <option key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Beeinflusst nur den KI-System-Prompt, nicht die Oberfläche.
+                  </p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
